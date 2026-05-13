@@ -64,8 +64,8 @@ stages:
   - job: ScanJob
     steps:
     - script: |
-        curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
-        trivy fs --exit-code 0 --severity HIGH,CRITICAL .
+        curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b .
+        ./trivy fs --exit-code 0 --severity HIGH,CRITICAL .
       displayName: 'Run Trivy FS Scan'
 
 - stage: SonarScan
@@ -117,15 +117,13 @@ stages:
   - job: ImageJob
     steps:
     - task: Docker@2
-      displayName: 'Build Docker Image'
+      displayName: 'Build and Push BuildId Tag'
       inputs:
-        command: 'build'
+        command: 'buildAndPush'
         repository: '$(imageRepository)'
         dockerfile: '$(dockerfilePath)'
         containerRegistry: '$(dockerRegistryServiceConnection)'
-        tags: |
-          $(tag)
-          latest
+        tags: '$(tag)'
 
 - stage: TrivyImage
   displayName: '8. Trivy Image Scan'
@@ -134,9 +132,9 @@ stages:
   - job: ScanJob
     steps:
     - script: |
-        curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
-        trivy image --exit-code 0 --severity HIGH,CRITICAL $(imageRepository):$(tag)
-      displayName: 'Run Trivy Image Scan'
+        curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b .
+        ./trivy image --exit-code 0 --severity HIGH,CRITICAL $(containerRegistry)/$(imageRepository):$(tag)
+      displayName: 'Scan Remote Image'
 
 - stage: DockerPush
   displayName: '9. Push Image to DockerHub'
@@ -145,14 +143,13 @@ stages:
   - job: PushJob
     steps:
     - task: Docker@2
-      displayName: 'Push to DockerHub'
+      displayName: 'Push Latest Tag'
       inputs:
-        command: 'push'
+        command: 'buildAndPush'
         repository: '$(imageRepository)'
+        dockerfile: '$(dockerfilePath)'
         containerRegistry: '$(dockerRegistryServiceConnection)'
-        tags: |
-          $(tag)
-          latest
+        tags: 'latest'
 
 - stage: Deploy
   displayName: '10. Deploy to Azure'
