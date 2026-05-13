@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prodigy | Next-Gen Intelligence</title>
+    <meta name="description" content="Prodigy - A modern, high-performance web application built with .NET 8 and deployed with state-of-the-art CI/CD pipelines.">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4facfe;
+            --secondary: #00f2fe;
+            --accent: #f093fb;
+            --accent-2: #f5576c;
+            --bg-dark: #0f172a;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Animated Background */
+        .bg-blobs {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.4;
+            animation: move 20s infinite alternate;
+        }
+
+        .blob-1 {
+            width: 600px;
+            height: 600px;
+            background: var(--primary);
+            top: -200px;
+            right: -100px;
+        }
+
+        .blob-2 {
+            width: 500px;
+            height: 500px;
+            background: var(--accent);
+            bottom: -150px;
+            left: -100px;
+            animation-delay: -5s;
+        }
+
+        .blob-3 {
+            width: 400px;
+            height: 400px;
+            background: var(--accent-2);
+            top: 40%;
+            left: 30%;
+            animation-delay: -10s;
+        }
+
+        @keyframes move {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(100px, 100px) scale(1.1); }
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1.5rem 10%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-main);
+            font-weight: 500;
+            font-size: 1rem;
+            transition: color 0.3s;
+            opacity: 0.8;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+            opacity: 1;
+        }
+
+        /* Hero Section */
+        header {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 10%;
+        }
+
+        .hero-badge {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 0.5rem 1.2rem;
+            border-radius: 100px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--primary);
+            margin-bottom: 2rem;
+            backdrop-filter: blur(5px);
+        }
+
+        h1 {
+            font-size: 6rem;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            letter-spacing: -3px;
+        }
+
+        h1 span {
+            display: block;
+            background: linear-gradient(to bottom, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-desc {
+            max-width: 700px;
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            margin-bottom: 3rem;
+        }
+
+        .cta-group {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .btn {
+            padding: 1rem 2.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #000;
+            box-shadow: 0 0 20px rgba(79, 172, 254, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(79, 172, 254, 0.6);
+        }
+
+        .btn-secondary {
+            background: var(--glass);
+            color: #fff;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* Features Section */
+        .section {
+            padding: 8rem 10%;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 5rem;
+        }
+
+        .section-title h2 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .section-title p {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 3rem;
+            border-radius: 24px;
+            backdrop-filter: blur(20px);
+            transition: all 0.4s;
+        }
+
+        .card:hover {
+            border-color: var(--primary);
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(79, 172, 254, 0.1);
+            border-radius: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 2rem;
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+
+        .card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .card p {
+            color: var(--text-muted);
+        }
+
+        /* Pipeline Dashboard */
+        .pipeline-container {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 3rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .pipeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #10b981;
+            display: inline-block;
+            margin-right: 10px;
+            box-shadow: 0 0 10px #10b981;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .pipeline-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 1.2rem;
+            background: var(--glass);
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .step-num {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .step-name {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .step-status {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 100px;
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        /* Footer */
+        footer {
+            padding: 5rem 10%;
+            border-top: 1px solid var(--glass-border);
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .footer-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 3.5rem; }
+            .nav-links { display: none; }
+            .section { padding: 4rem 5%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <nav>
+        <div class="logo">PRODIGY</div>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#pipeline">Pipeline</a>
+            <a href="#about">About</a>
+            <a href="#contact">Contact</a>
+        </div>
+        <a href="#" class="btn btn-secondary" style="padding: 0.6rem 1.5rem; font-size: 0.9rem;">Launch App</a>
+    </nav>
+
+    <header>
+        <div class="hero-badge">v2.0.4 Now Live • .NET 8 Optimized</div>
+        <h1>
+            <span>Engineering</span>
+            <span style="background: linear-gradient(to right, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Excellence.</span>
+        </h1>
+        <p class="hero-desc">
+            Experience the future of web applications. Built with precision, deployed with confidence, and designed to inspire. Prodigy is more than an app—it's a standard.
+        </p>
+        <div class="cta-group">
+            <a href="#features" class="btn btn-primary">Get Started</a>
+            <a href="#pipeline" class="btn btn-secondary">View Pipeline</a>
+        </div>
+    </header>
+
+    <section id="features" class="section">
+        <div class="section-title">
+            <h2>Core Capabilities</h2>
+            <p>Built with the latest technologies to ensure scale and speed.</p>
+        </div>
+        <div class="grid">
+            <div class="card">
+                <div class="card-icon">⚡</div>
+                <h3>Hyper-Fast</h3>
+                <p>Optimized .NET 8 runtime providing lightning-quick response times and efficient resource management.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">🛡️</div>
+                <h3>Secure by Design</h3>
+                <p>Automated Trivy and SonarCloud scans integrated directly into the CI/CD pipeline for maximum safety.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">☁️</div>
+                <h3>Cloud Native</h3>
+                <p>Fully containerized and ready for Azure Kubernetes Service or App Service deployments.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="pipeline" class="section">
+        <div class="section-title">
+            <h2>CI/CD Pipeline Status</h2>
+            <p>Real-time detection and deployment workflow.</p>
+        </div>
+        <div class="pipeline-container">
+            <div class="pipeline-header">
+                <div>
+                    <span class="status-dot"></span>
+                    <span style="font-weight: 600;">Main Branch Deployment</span>
+                </div>
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--text-muted);">
+                    Build #2026.05.13.1
+                </div>
+            </div>
+            <div class="pipeline-steps" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <div class="step">
+                    <span class="step-num">01</span>
+                    <span class="step-name">Restore</span>
+                    <span class="step-status">SUCCESS</span>
+                </div>
+                <div class="step">
+                    <span class="step-num">02</span>
+                    <span class="step-name">Build</span>
+                    <span class="step-status">SUCCESS</span>
+                </div>
+                <div class="step">
+                    <span class="step-num">03</span>
+                    <span class="step-name">Test</span>
+                    <span class="step-status">PASSED</span>
+                </div>
+                <div class="step">
+                    <span class="step-num">04</span>
+                    <span class="step-name">Trivy FS</span>
+                    <span class="step-status">CLEAN</span>
+                </div>
+                <div class="step">
+                    <span class="step-num">05</span>
+                    <span class="step-name">Sonar Scan</span>
+                    <span class="step-status">A+</span>
+                </div>
+                <div class="step">
+                    <span class="step-num">06</span>
+                    <span class="step-name">Push Artifact</span>
+                    <span class="step-status">READY</span>
+                </div>
+                <div class="step">
+                    <span class="step-num">07</span>
+                    <span class="step-name">Build Image</span>
+                    <span class="step-status">DONE</span>
+                </div>
+                <div class="step">
+                    <span class="step-num">08</span>
+                    <span class="step-name">Trivy Image</span>
+                    <span class="step-status">SECURE</span>
+                </div>
+                <div class="step">
+                    <span class="step-num">09</span>
+                    <span class="step-name">Push Image</span>
+                    <span class="step-status">PUSHED</span>
+                </div>
+                <div class="step" style="border-color: var(--primary);">
+                    <span class="step-num">10</span>
+                    <span class="step-name">Azure Deploy</span>
+                    <span class="step-status" style="background: rgba(79, 172, 254, 0.1); color: var(--primary);">ACTIVE</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-logo">PRODIGY</div>
+        <p>&copy; 2026 Prodigy Intelligence Systems. All rights reserved.</p>
+        <p style="margin-top: 1rem; font-size: 0.8rem;">Powered by .NET 8 & Azure DevOps</p>
+    </footer>
+
+    <script>
+        // Subtle scroll animation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Intersection Observer for fade-in
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = 1;
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.card, .pipeline-container').forEach(el => {
+            el.style.opacity = 0;
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>

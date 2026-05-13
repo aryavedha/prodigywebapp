@@ -1,0 +1,168 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  buildConfiguration: 'Release'
+  projectName: 'prodigywebapp'
+  sonarCloudConnection: 'SonarCloudConnection'
+  sonarOrganization: 'your-sonar-organization'
+  sonarProjectKey: 'your-sonar-project-key'
+  dockerRegistryServiceConnection: 'DockerHubConnection'
+  imageRepository: 'yourdockerhubuser/prodigywebapp'
+  containerRegistry: 'docker.io'
+  dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
+  tag: '$(Build.BuildId)'
+  azureSubscription: 'AzureRmConnection'
+  webAppName: 'prodigywebapp-service'
+
+stages:
+- stage: Restore
+  displayName: '1. Restore'
+  jobs:
+  - job: RestoreJob
+    steps:
+    - task: DotNetCoreCLI@2
+      displayName: 'Restore packages'
+      inputs:
+        command: 'restore'
+        projects: '**/*.csproj'
+
+- stage: Build
+  displayName: '2. Build'
+  dependsOn: Restore
+  jobs:
+  - job: BuildJob
+    steps:
+    - task: DotNetCoreCLI@2
+      displayName: 'Build project'
+      inputs:
+        command: 'build'
+        projects: '**/*.csproj'
+        arguments: '--configuration $(buildConfiguration)'
+
+- stage: Test
+  displayName: '3. Test'
+  dependsOn: Build
+  jobs:
+  - job: TestJob
+    steps:
+    - task: DotNetCoreCLI@2
+      displayName: 'Run tests'
+      inputs:
+        command: 'test'
+        projects: '**/*Tests/*.csproj'
+        arguments: '--configuration $(buildConfiguration) --collect "Code Coverage"'
+      continueOnError: true
+
+- stage: TrivyFS
+  displayName: '4. Trivy FS Scan'
+  dependsOn: Build
+  jobs:
+  - job: ScanJob
+    steps:
+    - script: |
+        curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+        trivy fs --exit-code 0 --severity HIGH,CRITICAL .
+      displayName: 'Run Trivy FS Scan'
+
+- stage: SonarScan
+  displayName: '5. SonarQuality Scan'
+  dependsOn: Build
+  jobs:
+  - job: SonarJob
+    steps:
+    - task: SonarCloudPrepare@1
+      displayName: 'Prepare SonarCloud'
+      inputs:
+        SonarCloud: '$(sonarCloudConnection)'
+        organization: '$(sonarOrganization)'
+        scannerMode: 'MSBuild'
+        projectKey: '$(sonarProjectKey)'
+        projectName: '$(projectName)'
+    - task: DotNetCoreCLI@2
+      displayName: 'Build for Sonar'
+      inputs:
+        command: 'build'
+        projects: '**/*.csproj'
+    - task: SonarCloudAnalyze@1
+      displayName: 'Run Sonar Analysis'
+    - task: SonarCloudPublish@1
+      displayName: 'Publish Quality Gate'
+
+- stage: PushArtifact
+  displayName: '6. Push Artifact'
+  dependsOn: Build
+  jobs:
+  - job: PushJob
+    steps:
+    - task: DotNetCoreCLI@2
+      displayName: 'Publish'
+      inputs:
+        command: 'publish'
+        publishWebProjects: true
+        arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+    - task: PublishBuildArtifacts@1
+      displayName: 'Push Artifact'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+
+- stage: CreateImage
+  displayName: '7. Build Image'
+  dependsOn: PushArtifact
+  jobs:
+  - job: ImageJob
+    steps:
+    - task: Docker@2
+      displayName: 'Build Docker Image'
+      inputs:
+        command: 'build'
+        repository: '$(imageRepository)'
+        dockerfile: '$(dockerfilePath)'
+        containerRegistry: '$(dockerRegistryServiceConnection)'
+        tags: |
+          $(tag)
+          latest
+
+- stage: TrivyImage
+  displayName: '8. Trivy Image Scan'
+  dependsOn: CreateImage
+  jobs:
+  - job: ScanJob
+    steps:
+    - script: |
+        curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+        trivy image --exit-code 0 --severity HIGH,CRITICAL $(imageRepository):$(tag)
+      displayName: 'Run Trivy Image Scan'
+
+- stage: DockerPush
+  displayName: '9. Push Image to DockerHub'
+  dependsOn: TrivyImage
+  jobs:
+  - job: PushJob
+    steps:
+    - task: Docker@2
+      displayName: 'Push to DockerHub'
+      inputs:
+        command: 'push'
+        repository: '$(imageRepository)'
+        containerRegistry: '$(dockerRegistryServiceConnection)'
+        tags: |
+          $(tag)
+          latest
+
+- stage: Deploy
+  displayName: '10. Deploy to Azure'
+  dependsOn: DockerPush
+  jobs:
+  - job: DeployJob
+    steps:
+    - task: AzureWebAppContainer@1
+      displayName: 'Azure App Service Deploy'
+      inputs:
+        azureSubscription: '$(azureSubscription)'
+        appName: '$(webAppName)'
+        containers: '$(containerRegistry)/$(imageRepository):$(tag)'
